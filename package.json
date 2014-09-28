@@ -1,0 +1,25 @@
+{
+  "name": "ya-chain",
+  "version": "0.0.1",
+  "description": "Yet Another Promise Library",
+  "main": "chain.js",
+  "directories": {
+    "test": "node_modules/.bin/mocha"
+  },
+  "scripts": {
+    "test": "mocha"
+  },
+  "keywords": [
+    "promise",
+    "async"
+  ],
+  "author": "Jonathan Sanchez",
+  "license": "MIT",
+  "devDependencies": {
+    "chai": "^1.9.1",
+    "es6-promise": "^1.0.0",
+    "mocha": "^1.21.4",
+    "rsvp": "^3.0.13",
+    "when": "^3.4.6"
+  }
+}
