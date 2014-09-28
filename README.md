@@ -7,7 +7,7 @@ ya-chain use ES6 Promise (not included) and try to make chaining simple, easy an
 
 ## Example:
 
-´´´javascript
+```javascript
 
 var chain = new Chain();
 
@@ -23,10 +23,10 @@ chain.process().then(function () {
     console.log('all are processed');
 });
 
-´´´
+```
 
 
-´´´javascript
+```javascript
 
 var chain = new Chain();
 
@@ -52,14 +52,14 @@ chain.concurent(2).process([
     console.log('all files processed');
 });
 
-´´´
+```
 
 
 ## API
 
 ### Constructor([fn])
 
-Make a new chain. If fn is present, add fn to the sequence. (see ´.next´)
+Make a new chain. If fn is present, add fn to the sequence. (see `.next`)
 
 ### .next(fn)
 
@@ -71,5 +71,5 @@ Create a new chain and return it. When it will be processed, it will be in parra
 
 ### .process(values)
 
-If ´values´ is an array start the sequence for each values as the initial value in parallel.
-If ´values´ is a vaule, use it as the initial value and start the sequence.
+If `values` is an array start the sequence for each values as the initial value in parallel.
+If `values` is a vaule, use it as the initial value and start the sequence.
