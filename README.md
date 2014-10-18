@@ -45,14 +45,6 @@ chain.fork(function () {
     return doStuffInParallel(file);
 });
 
-chain.next(function (filename) {
-    return fs.get(filename);
-});
-
-chain.next(function (content) {
-    return fs.put(content);
-});
-
 chain.process().then(function () {
     console.log('all files processed');
 });
@@ -63,17 +55,18 @@ Statefull:
 
 ```javascript
 
-var chain = new Chain(function (id) {
+var chain = new Chain(function () {
 
-    this.id = id;
+    this.id = this.values.pop();
     return db.users.findOne({id: id});
 
-}).next(function (user) {
+}).next(function () {
 
-    this.user = user;
+    this.user = this.values.pop();
     return db.roles.find({user: this.user});
 
-}).next(function (roles) {
+}).next(function () {
+    this.roles = this.values.pop();
 
     if ('admin' in roles) {
         this.user.admin = true;
@@ -81,28 +74,33 @@ var chain = new Chain(function (id) {
     return this.user.save();
 });
 
-chain.process(['1', '2', '3']);
+chain.process(1);
 
 ```
 
 
 ## API
 
-### Constructor([fn])
+### Constructor()
 
-Make a new chain. If fn is present, add fn to the sequence. (see `.next`)
+Make a new chain.
 
-### .next(fn)
+### .next(step)
 
-Add `fn` to the sequence.
-`fn` can retrun a promise or a value, `fn` is called after the previous `fn` succeed and its promise (if any) is fullfiled.
-For each data to process, the previous returned or fullfiled value will give in parametre to `fn` and each `fn` will share the same context (this). The sequence will be suspend when `fn` raise an exception or when `fn` return an rejected promise.
+Add a step to the sequence.
+`step` can be:
+- a function that return a value
+- a function that retrun a promise
+- a function that take a `done` callback in paramettre and call it
+- a value
+- a promise
+
+All steps are called in sequence after the previous step succeed and will share the same context (this). The sequence will be suspend when `step` raise an exception or when `step` return an rejected promise.
 
 ### .fork()
 
 Create a new chain and return it. When it will be processed, it will be in parrallel.
 
-### .process(values)
+### .process(value)
 
-If `values` is an array start the sequence for each values as the initial value in parallel.
-If `values` is a vaule, use it as the initial value and start the sequence.
+Start the sequence of steps with value as initial value.
