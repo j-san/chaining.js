@@ -1,9 +1,9 @@
 
 
-Yet Another Promise Library
----------------------------
+Yet Another Javascript Chaining Library
+---------------------------------------
 
-ya-chain use ES6 Promise (not included) and try to make chaining simple, easy and readable.
+Make chaining simple, easy and readable.
 
 ## Example:
 
@@ -11,46 +11,77 @@ ya-chain use ES6 Promise (not included) and try to make chaining simple, easy an
 
 var chain = new Chain();
 
-chain.fork().next(function () {
-    return doStuffInParallel();
+chain.next('do something',
+function () {
+    return promiseSomething();
 });
 
-chain.next(function (filename) {
-    return doSomethingsElse();
+chain.next('do something else',
+function () {
+    var stuff = this.values.pop();
+    return promiseSomethingElse(stuff);
 });
 
 chain.process().then(function () {
-    console.log('all are processed');
+    console.log('end of process');
 });
 
 ```
 
+With parallelism and data flow:
 
 ```javascript
 
 var chain = new Chain();
 
-chain.fork().next(function () {
-    return doStuff();
+chain.fork(function () {
+    return [
+        'file1.json',
+        'file2.json',
+        'file3.json'
+    ];
+}).next(function () {
+    var file = this.values.pop();
+    return doStuffInParallel(file);
 });
 
 chain.next(function (filename) {
     return fs.get(filename);
 });
 
-chain.next(JSON.parse);
-
 chain.next(function (content) {
     return fs.put(content);
 });
 
-chain.concurent(2).process([
-    'file1.json',
-    'file2.json',
-    'file3.json'
-]).then(function () {
+chain.process().then(function () {
     console.log('all files processed');
 });
+
+```
+
+Statefull:
+
+```javascript
+
+var chain = new Chain(function (id) {
+
+    this.id = id;
+    return db.users.findOne({id: id});
+
+}).next(function (user) {
+
+    this.user = user;
+    return db.roles.find({user: this.user});
+
+}).next(function (roles) {
+
+    if ('admin' in roles) {
+        this.user.admin = true;
+    }
+    return this.user.save();
+});
+
+chain.process(['1', '2', '3']);
 
 ```
 
@@ -63,7 +94,9 @@ Make a new chain. If fn is present, add fn to the sequence. (see `.next`)
 
 ### .next(fn)
 
-Add fn to the sequence.
+Add `fn` to the sequence.
+`fn` can retrun a promise or a value, `fn` is called after the previous `fn` succeed and its promise (if any) is fullfiled.
+For each data to process, the previous returned or fullfiled value will give in parametre to `fn` and each `fn` will share the same context (this). The sequence will be suspend when `fn` raise an exception or when `fn` return an rejected promise.
 
 ### .fork()
 

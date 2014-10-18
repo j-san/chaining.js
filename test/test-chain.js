@@ -13,19 +13,26 @@ var delay = function (delay) {
 };
 
 describe('Chain', function () {
+    var chain;
+    beforeEach(function() {
+        chain = new Chain();
+    });
 
-    it('should run in sequence', function (done) {
-        var chain = new Chain(function (value) {
+    it('should run steps in sequence', function (done) {
+        chain.next(function () {
+            var value = this.values.pop();
             expect(value).to.equal(1);
             return value + 1;
         });
 
-        chain.next(function (value) {
+        chain.next(function () {
+            var value = this.values.pop();
             expect(value).to.equal(2);
             return value + 1;
         });
 
-        chain.next(function (value) {
+        chain.next(function () {
+            var value = this.values.pop();
             expect(value).to.equal(3);
             return value + 1;
         });
@@ -35,27 +42,26 @@ describe('Chain', function () {
         });
     });
 
-    it('should wait end of delay', function (done) {
-        var count = 0;
-        var start = Date.now(), duration = 0;
-        var chain = new Chain(function () {
-            count++;
+    it('should wait resolution of promise', function (done) {
+        var count = 0,
+            start = Date.now(),
+            duration = 0;
+
+        chain.next(function () {
             return delay(100);
         });
 
         chain.next(function () {
-            count++;
-            return delay(100);
-        });
-
-        chain.next(function () {
-            count++;
             duration = Date.now() - start;
+            expect(duration).to.be.closeTo(100, 30);
+
+            return delay(100);
         });
 
-        chain.process([true]).then(function () {
-            expect(count).to.equal(3);
-            expect(duration).to.gte(200);
+        chain.process().then(function () {
+            duration = Date.now() - start;
+            expect(duration).to.be.closeTo(200, 30);
+
             done();
         });
     });
@@ -79,11 +85,12 @@ describe('Chain', function () {
         });
     });
 
-    it('should be process for each item in argument', function (done) {
-        var count = 0;
-        var chain = new Chain();
+    it.skip('should be process for each item in array', function (done) {
+        var count = 0, items = [1, 2, 3];
 
         chain.next(function () {
+            expect(this.values.pop()).to.equal(items[count]);
+
             count++;
         });
 
@@ -93,8 +100,8 @@ describe('Chain', function () {
         });
     });
 
-    xit('should keep same "this"', function (done) {
-        var chain = new Chain(function () {
+    it('should keep have a context with `this`', function (done) {
+        chain.next(function () {
             this.foo = "bar";
         });
 
@@ -107,23 +114,78 @@ describe('Chain', function () {
         });
     });
 
-    xit('should be forkable', function () {
-        var chain = new Chain();
+    describe('fork', function () {
+        it.skip('should exec in parallel', function () {
+            var chain = new Chain();
 
-        chain.fork().next(function () {
+            chain.fork().next(function () {
+            });
+
+            chain.process().then(function () {
+                done();
+            });
         });
 
-        chain.process().then(function () {
-            done();
+        it.skip('should wait for all forks', function () {
+        });
+
+        it.skip('should fork inside fork', function () {
         });
     });
 
-    xit('should wait for forks', function () {
+    it.skip('should respect the max concurrent number', function () {
+        chain.limitConcurent(2);
     });
 
-    xit('should fork inside fork', function () {
+    describe('error', function() {
+        it.skip('should have trace', function () {
+        });
+
+        it.skip('should contains step name', function () {
+        });
     });
 
-    xit('should respect the max concurrent number', function () {
+
+    describe('step', function() {
+        it.skip('should named', function () {
+            chain.next('just doing somethings', function (done) {
+            });
+        });
+
+        it.skip('should store the resolved value', function () {
+            chain.next(function (done) {
+                done('hello');
+            });
+            chain.next(function (done) {
+                this.values.pop();
+                done();
+            });
+            chain.process();
+        });
+
+        it.skip('should be runnable from index', function () {
+            chain.next(function (done) {
+                done('hello');
+            });
+        });
+
+        describe('callback', function () {
+            it.skip('should polyfill node style on success', function () {
+                chain.next(function node (done) {
+                });
+            });
+            it.skip('should polyfill node style on error', function () {
+                chain.next(function node (done) {
+                });
+            });
+
+            it.skip('should polyfill browser style', function () {
+                chain.next(function browser (done) {
+                });
+            });
+            it.skip('should ', function () {
+            });
+        });
     });
+
 });

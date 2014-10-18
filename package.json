@@ -1,8 +1,8 @@
 {
-  "name": "ya-chain",
+  "name": "chaining",
   "version": "0.0.1",
-  "description": "Yet Another Promise Library",
-  "main": "chain.js",
+  "description": "Yet Another Chaining Library",
+  "main": "src/chain.js",
   "directories": {
     "test": "node_modules/.bin/mocha"
   },
@@ -11,7 +11,9 @@
   },
   "keywords": [
     "promise",
-    "async"
+    "async",
+    "chain",
+    "defered"
   ],
   "author": "Jonathan Sanchez",
   "license": "MIT",
