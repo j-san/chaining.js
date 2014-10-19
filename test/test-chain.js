@@ -1,4 +1,4 @@
-// require('es6-promise').polyfill();
+
 require('when/es6-shim/Promise');
 
 var Chain = require('../src/chain');
