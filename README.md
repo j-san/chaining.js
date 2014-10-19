@@ -1,5 +1,10 @@
 
 
+[![Build Status](http://img.shields.io/travis/j-san/chaining.js/master.svg)](https://travis-ci.org/j-san/chaining.js)
+[![Coverage](http://img.shields.io/codecov/c/github/j-san/chaining.js.svg)](https://travis-ci.org/j-san/chaining.js)
+[![Version](http://img.shields.io/npm/v/chaining.svg)](https://www.npmjs.org/package/chaining)
+[![Dependencies](http://img.shields.io/david/j-san/chaining.js.svg)]
+[![Dev Dependencies](http://img.shields.io/david/dev/j-san/chaining.js.svg)]
 Yet Another Javascript Chaining Library
 ---------------------------------------
 
