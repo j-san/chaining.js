@@ -1,6 +1,6 @@
 {
   "name": "chaining",
-  "version": "0.0.1",
+  "version": "0.1.0",
   "description": "Yet Another Chaining Library",
   "main": "src/chain.js",
   "directories": {
@@ -15,9 +15,9 @@
     "chain",
     "defered"
   ],
-  "repository" : {
-    "type" : "git",
-    "url" : "https://github.com/j-san/chaining.js.git"
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/j-san/chaining.js.git"
   },
   "author": "Jonathan Sanchez",
   "license": "MIT",
