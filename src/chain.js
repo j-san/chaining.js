@@ -30,11 +30,6 @@ Chain.prototype.run = function (index) {
         self = this,
         step = this.steps[index];
 
-    if (index >= this.steps.length) {
-        return;
-    }
-
-
     if (step instanceof Chain) {
         promise = step.process();
     } else if (step instanceof Function && step.length) {

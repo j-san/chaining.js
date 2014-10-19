@@ -160,20 +160,54 @@ describe('Chain', function () {
 
 
     describe('step', function() {
-        it.skip('should handle value', function () {
+        it('should handle value', function (done) {
             chain.next(1);
+            chain.process().then(function (value) {
+                expect(value).to.equal(1);
+                done();
+            });
         });
 
-        it.skip('should handle promise', function () {
+        it('should handle promise', function (done) {
+            var start = Date.now();
+            chain.next(delay(100));
+            chain.process().then(function () {
+                expect(Date.now() - start).to.be.closeTo(100, 30);
+                done();
+            });
         });
 
-        it.skip('should handle function returning value', function () {
+        it('should handle function returning value', function (done) {
+            chain.next(function () {
+                return 1;
+            });
+            chain.process().then(function (value) {
+                expect(value).to.equal(1);
+                done();
+            });
         });
 
-        it.skip('should handle function returning promise', function () {
+        it('should handle function returning promise', function (done) {
+            var start = Date.now();
+            chain.next(function () {
+                return delay(100);
+            });
+            chain.process().then(function () {
+                expect(Date.now() - start).to.be.closeTo(100, 30);
+                done();
+            });
         });
 
-        it.skip('should handle function with callback', function () {
+        it('should handle function with callback', function (done) {
+            chain.next(function (done) {
+                setTimeout(function () {
+                    done(123);
+                }, 100);
+            });
+            chain.process().then(function (value) {
+                expect(value).to.be.equal(123);
+                done();
+            });
         });
 
         it('should be named', function () {
