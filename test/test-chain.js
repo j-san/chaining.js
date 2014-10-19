@@ -1,11 +1,10 @@
-
 require('when/es6-shim/Promise');
 
 var Chain = require('../src/chain');
 var expect = require('chai').expect;
 
 var delay = function (delay) {
-    return new Promise(function (resolve, reject) {
+    return new Promise(function (resolve) {
         setTimeout(function () {
             resolve();
         }, delay);
@@ -37,14 +36,14 @@ describe('Chain', function () {
             return value + 1;
         });
 
-        chain.process(1).then(function () {
+        chain.process(1).then(function (value) {
+            expect(value).to.equal(4);
             done();
         });
     });
 
     it('should wait resolution of promise', function (done) {
-        var count = 0,
-            start = Date.now(),
+        var start = Date.now(),
             duration = 0;
 
         chain.next(function () {
@@ -85,21 +84,6 @@ describe('Chain', function () {
         });
     });
 
-    it.skip('should be process for each item in array', function (done) {
-        var count = 0, items = [1, 2, 3];
-
-        chain.next(function () {
-            expect(this.values.pop()).to.equal(items[count]);
-
-            count++;
-        });
-
-        chain.process([1, 2, 3]).then(function () {
-            expect(count).to.equal(3);
-            done();
-        });
-    });
-
     it('should keep have a context with `this`', function (done) {
         chain.next(function () {
             this.foo = "bar";
@@ -115,13 +99,42 @@ describe('Chain', function () {
     });
 
     describe('fork', function () {
-        it.skip('should exec in parallel', function () {
+        it.skip('should exec in parallel for generator', function (done) {
+            var chain = new Chain();
+
+            // chain.fork(function* () {
+            //     yeld 1;
+            //     yeld 2;
+            //     yeld 3;
+            // });
+
+            chain.process().then(function () {
+                done();
+            });
+        });
+
+        it.skip('should exec in parallel', function (done) {
             var chain = new Chain();
 
             chain.fork().next(function () {
             });
 
             chain.process().then(function () {
+                done();
+            });
+        });
+
+        it.skip('should be process for each item in array', function (done) {
+            var count = 0, items = [1, 2, 3];
+
+            chain.next(function () {
+                expect(this.values.pop()).to.equal(items[count]);
+
+                count++;
+            });
+
+            chain.process([1, 2, 3]).then(function () {
+                expect(count).to.equal(3);
                 done();
             });
         });
@@ -147,9 +160,26 @@ describe('Chain', function () {
 
 
     describe('step', function() {
-        it.skip('should named', function () {
-            chain.next('just doing somethings', function (done) {
-            });
+        it.skip('should handle value', function () {
+            chain.next(1);
+        });
+
+        it.skip('should handle promise', function () {
+        });
+
+        it.skip('should handle function returning value', function () {
+        });
+
+        it.skip('should handle function returning promise', function () {
+        });
+
+        it.skip('should handle function with callback', function () {
+        });
+
+        it('should be named', function () {
+            chain.next(function doingSomethings() {});
+
+            expect(chain.steps[0].name).to.equal('doingSomethings');
         });
 
         it.skip('should store the resolved value', function () {
@@ -171,16 +201,16 @@ describe('Chain', function () {
 
         describe('callback', function () {
             it.skip('should polyfill node style on success', function () {
-                chain.next(function node (done) {
+                chain.next(function node () {
                 });
             });
             it.skip('should polyfill node style on error', function () {
-                chain.next(function node (done) {
+                chain.next(function node () {
                 });
             });
 
             it.skip('should polyfill browser style', function () {
-                chain.next(function browser (done) {
+                chain.next(function browser () {
                 });
             });
             it.skip('should ', function () {

@@ -8,6 +8,7 @@ function Chain() {
 
 Chain.prototype.next = function (step) {
     this.steps.push(step);
+    return this;
 };
 
 Chain.prototype.fork = function () {
@@ -20,60 +21,68 @@ Chain.prototype.process = Chain.prototype.start = function (initial) {
     if (initial) {
         this.context.values.push(initial);
     }
-    this.promises.push(this.run(0));
 
-    return Promise.all(this.promises);
+    return this.run(0);
 };
 
 Chain.prototype.run = function (index) {
-    var self = this, step;
+    var promise,
+        self = this,
+        step = this.steps[index];
 
     if (index >= this.steps.length) {
         return;
     }
 
-    step = this.steps[index];
+
     if (step instanceof Chain) {
-        // fork...
-        step.process();
+        promise = step.process();
     } else if (step instanceof Function && step.length) {
         // step with arguments => giving a done callback
-        return this.run_with_callback(step);
+        promise = this.runWithCallback(step);
     } else if (step instanceof Function) {
         // step without arguments
         // assume it return a promise or a direct vaule
-        var promiseOrValue = step.call(this.context);
-        if (promiseOrValue instanceof Object && 'then' in promiseOrValue) {
-
-            return promiseOrValue.then(function (result) {
-                self.context.values.push(result);
-                return self.run(index + 1);
-            });
-        } else {
-            // step return a value, forward
-            this.context.values.push(promiseOrValue);
-            return this.run(index + 1);
-        }
-    } else if ('then' in step) {
-        // step is a promise
-        return step.then(function (result) {
-            self.context.values.push(result);
-            return self.run(index + 1);
-        });
+        promise = this.runWithReturn(step);
     } else {
-        throw Error("Bad step " + step);
+        // step is a promise or a value
+        promise = this.handleValue(step);
     }
 
-    return this;
+    return promise.then(function (result) {
+        self.context.values.push(result);
+        if (index + 1 < self.steps.length) {
+            return self.run(index + 1);
+        }
+        return result;
+    });
 };
 
-Chain.prototype.run_with_callback = function (step) {
-        return new Promise(function done(resolve, reject) {
-        step.call(this.context, function (value) {
-            // test for error ???
+Chain.prototype.runWithCallback = function (step) {
+    var self = this;
+    return new Promise(function (resolve, reject) {
+        step.call(self.context, function (value) {
+            if (value instanceof Error) {
+                reject(value);
+            }
             resolve(value);
         });
     });
+};
+
+Chain.prototype.runWithReturn = function (step) {
+    var result = step.call(this.context);
+    return this.handleValue(result);
+};
+
+Chain.prototype.handleValue = function (value) {
+    if (value instanceof Object && 'then' in value) {
+        return value;
+    } else {
+        return new Promise(function(resolve) {
+            resolve(value);
+        });
+    }
 };
 
 module.exports = Chain;

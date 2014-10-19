@@ -3,7 +3,15 @@
 Yet Another Javascript Chaining Library
 ---------------------------------------
 
-Make chaining simple, easy and readable.
+Make callbacks simple, easy and readable.
+
+Goals
+-----
+
+- Error reporting and debugging
+- Deadly simple
+- Complient with different methode
+
 
 ## Example:
 
@@ -11,15 +19,13 @@ Make chaining simple, easy and readable.
 
 var chain = new Chain();
 
-chain.next('do something',
-function () {
+chain.next(function doSomething() {
     return promiseSomething();
 });
 
-chain.next('do something else',
-function () {
-    var stuff = this.values.pop();
-    return promiseSomethingElse(stuff);
+chain.next(function doSomethingElse() {
+    this.stuff = this.values.pop();
+    return promiseSomethingElse(this.stuff);
 });
 
 chain.process().then(function () {
