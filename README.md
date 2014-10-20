@@ -13,12 +13,13 @@ Yet Another Javascript Chaining Library
 
 Make callbacks simple, easy and readable.
 
+
 Goals
 -----
 
-- Error reporting and debugging
+- Strong error handling
 - Deadly simple
-- Complient with different methode
+- Complient with diverse deferred method
 
 
 ## Example:
