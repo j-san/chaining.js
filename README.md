@@ -17,7 +17,7 @@ Make callbacks simple, easy and readable.
 Goals
 -----
 
-- Strong error handling
+- Strong error handling, [keep Zalgo chained](http://blog.izs.me/post/59142742143/designing-apis-for-asynchrony)
 - Deadly simple
 - Complient with diverse deferred method
 
