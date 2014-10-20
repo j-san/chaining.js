@@ -5,8 +5,10 @@
 [![Version](http://img.shields.io/npm/v/chaining.svg)](https://www.npmjs.org/package/chaining)
 [![Dependencies](http://img.shields.io/david/j-san/chaining.js.svg)](https://david-dm.org/j-san/chaining.js#info=dependencies)
 [![Dev Dependencies](http://img.shields.io/david/dev/j-san/chaining.js.svg)](https://david-dm.org/j-san/chaining.js#info=devDependencies)
-Yet Another Javascript Chaining Library
 [![Coverage Graph](https://codecov.io/github/j-san/chaining.js/branch.svg?branch=master)](https://codecov.io/github/j-san/chaining.js)
+
+
+Yet Another Javascript Chaining Library
 ---------------------------------------
 
 Make callbacks simple, easy and readable.
