@@ -125,12 +125,7 @@ describe('Chain', function () {
     });
 
     describe('fork', function () {
-        it('should fork with next function', function (done) {
-            // chain.fork(function* () {
-            //     yeld 1;
-            //     yeld 2;
-            //     yeld 3;
-            // });
+        it('should fork with function', function (done) {
             var values = [1, 2, 3];
             chain.fork(function () {
                 return function next() {
@@ -140,6 +135,23 @@ describe('Chain', function () {
 
             chain.process().then(function () {
                 expect(values).to.be.empty;
+                done();
+            });
+        });
+        it.skip('should fork with generator', function (done) {
+            var count = 0;
+            // chain.fork(function* () {
+            //     yeld 1;
+            //     yeld 2;
+            //     yeld 3;
+            // });
+
+            chain.next(function () {
+                count++;
+            });
+
+            chain.process().then(function () {
+                expect(count).to.equal(3);
                 done();
             });
         });
@@ -193,22 +205,41 @@ describe('Chain', function () {
             });
         });
 
-        it.skip('should wait for all forks', function () {
+        it('should wait for all forks', function (done) {
+            var chain = new Chain(),
+                count = 0, start = Date.now();
+
+            chain.fork([100, 150, 150, 100]);
+            chain.next(function () {
+                count++;
+                return promiseDelay(this.values.pop());
+            });
+            chain.next(function () {
+                return promiseDelay(100);
+            });
+
+
+            chain.process().then(function () {
+                var duration = Date.now() - start;
+                expect(duration).to.be.closeTo(250, 30);
+                expect(count).to.equal(4);
+                done();
+            });
         });
 
-        it.skip('should fork inside fork', function () {
+        it.skip('should respect max concurrent fork number', function () {
         });
     });
 
-    it.skip('should respect the max concurrent number', function () {
-        chain.limitConcurent(2);
-    });
 
-    describe('error', function() {
+    describe('error handling', function() {
         it.skip('should have trace', function () {
         });
 
         it.skip('should contains step name', function () {
+        });
+
+        it.skip('should stop step processing', function () {
         });
     });
 

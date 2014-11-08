@@ -28,11 +28,9 @@ Goals
 
 var chain = new Chain();
 
-chain.next(function doSomething() {
-    return promiseSomething();
-});
+chain.next(promiseForStuff());
 
-chain.next(function doSomethingElse() {
+chain.next(function () {
     this.stuff = this.values.pop();
     return promiseSomethingElse(this.stuff);
 });
@@ -49,15 +47,13 @@ With parallelism and data flow:
 
 var chain = new Chain();
 
-chain.fork(function () {
-    return [
-        'file1.json',
-        'file2.json',
-        'file3.json'
-    ];
-}).next(function () {
+chain.fork([
+    'file1.json',
+    'file2.json',
+    'file3.json'
+]).next(function (done) {
     var file = this.values.pop();
-    return doStuffInParallel(file);
+    return fs.readFile(file, done);
 });
 
 chain.process().then(function () {
@@ -106,16 +102,16 @@ Add a step to the sequence.
 `step` can be:
 - a function that return a value
 - a function that retrun a promise
-- a function that take a `done` callback in paramettre and call it
+- an async function that take a `done` callback
 - a value
 - a promise
 
-All steps are called in sequence after the previous step succeed and will share the same context (this). The sequence will be suspend when `step` raise an exception or when `step` return an rejected promise.
 
-### .fork()
+### .fork(iterator)
 
-Create a new chain and return it. When it will be processed, it will be in parrallel.
+Fork and continue the sequence in parallel, the number of parallel sequence depend of the number of object contained in iterator.
 
 ### .process(value)
 
 Start the sequence of steps with value as initial value.
+All steps are called in sequence after the previous step succeed and will share the same context (this). The sequence will be suspend when `step` raise an exception or when `step` return an rejected promise.
