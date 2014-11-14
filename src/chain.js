@@ -111,6 +111,9 @@ Fork.prototype.initIterator = function (context) {
     } else {
         this.iterator = this.step;
     }
+    if(!this.iterator) {
+        throw new Error('Invalid iterator for forking');
+    }
 };
 
 Fork.prototype.nextValue = function () {
