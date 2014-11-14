@@ -59,6 +59,41 @@ chain.fork([
 chain.process().then(function () {
     console.log('all files processed');
 });
+```
+
+```
+var installer = new Chain();
+
+installer.fork(function () {
+    this.manager = new Manager();
+
+    this.depndencies = this.initial;
+    return this.depndencies;
+})
+.next(function () {
+    this.package = this.values.pop();
+
+    return this.parent.manager.preinstall(this.package);
+}).next(function () {
+    return this.parent.manager.install(this.package);
+}).next(function () {
+    return this.parent.manager.postinstall(this.package);
+}).next(function () {
+    return installRequirejs();
+});
+
+exports.install = function (packages) {
+
+    installer.process(packages).then(function () {
+        console.log('All installation completed');
+    }, function (err) {
+        console.error('Somethings went wrong...');
+        console.error(err.trace);
+    }, function (dep) {
+        console.log('Install ended for', dep.name);
+    });
+};
+
 
 ```
 
