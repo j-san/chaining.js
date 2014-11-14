@@ -229,6 +229,43 @@ describe('Chain', function () {
 
         it.skip('should respect max concurrent fork number', function () {
         });
+
+        it.skip('should resolve progress callback', function (done) {
+
+            chain.fork([1, 2, 3, 4]);
+            chain.next(function () {
+                return this.values.pop() * 2;
+            });
+
+            var responses = [2, 4, 6, 8];
+            chain.process().then(function () {
+                expect(responses).to.has.length.equal(0);
+                done();
+            }, function () {
+                done(new Error('Should not failed...'));
+            }, function (val) {
+                expect(responses.indexOf(val)).to.be.gte(0);
+                responses.slice(responses.indexOf(val), 1);
+            });
+        });
+
+        it.skip('should have a new context and a reference to the parent', function (done) {
+            chain.next(function () {
+                this.foo = "bar";
+            });
+
+            chain.fork([1, 2, 3]);
+
+            chain.next(function () {
+                this.values.length.equal(1);
+                expect(this.foo).to.be.undefined;
+                this.foo = "bar";
+            });
+
+            chain.process().then(function () {
+                done();
+            });
+        });
     });
 
 
