@@ -62,10 +62,10 @@ chain.process().then(function () {
 ```
 
 ```
+var manager = new Manager();
 var installer = new Chain();
 
 installer.fork(function () {
-    this.manager = new Manager();
 
     this.depndencies = this.initial;
     return this.depndencies;
@@ -73,13 +73,11 @@ installer.fork(function () {
 .next(function () {
     this.package = this.values.pop();
 
-    return this.parent.manager.preinstall(this.package);
+    return manager.preinstall(this.package);
 }).next(function () {
-    return this.parent.manager.install(this.package);
+    return manager.install(this.package);
 }).next(function () {
-    return this.parent.manager.postinstall(this.package);
-}).next(function () {
-    return installRequirejs();
+    return manager.postinstall(this.package);
 });
 
 exports.install = function (packages) {
@@ -88,7 +86,6 @@ exports.install = function (packages) {
         console.log('All installation completed');
     }, function (err) {
         console.error('Somethings went wrong...');
-        console.error(err.trace);
     }, function (dep) {
         console.log('Install ended for', dep.name);
     });
