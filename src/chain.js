@@ -133,7 +133,6 @@ Step.prototype.runWithCallback = function (context, value) {
             if (err instanceof Error) {
                 reject(err);
             }
-            console.log('resolve', result);
             resolve(err || result);
         }, reject);
     });

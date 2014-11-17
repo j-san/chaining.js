@@ -180,7 +180,6 @@ The sequence will be suspend when `step` raise an exception or when `step` retur
 TODO
 ----
 
-- Run tests different promise implementation
 - Make it works in browser and publish on Bower
 - Limit concurent forks
 - Progress for forks or steps ?

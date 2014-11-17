@@ -1,7 +1,5 @@
 /* jshint expr: true */
 
-require('when/es6-shim/Promise');
-
 var Chain = require('../src/chain');
 var expect = require('chai').expect;
 
@@ -140,7 +138,7 @@ describe('Chain', function () {
         });
         it.skip('should fork with generator', function (done) {
             var count = 0;
-            // chain.fork(function* () {
+            // chain.fork(function f*() {
             //     yeld 1;
             //     yeld 2;
             //     yeld 3;
