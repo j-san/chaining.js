@@ -19,10 +19,38 @@ Goals
 
 - Strong error handling, [keep Zalgo chained](http://blog.izs.me/post/59142742143/designing-apis-for-asynchrony)
 - Deadly simple
-- Complient with diverse deferred method
+- Complient with common deferred methods (node convention, promise standard and browser style)
 
+Install
+-------
 
-## Example:
+`npm install chaining`
+
+You also need a es6 Promise library:
+
+With `when`
+
+```
+require('when/es6-shim/Promise');
+```
+
+With `Q`
+
+```
+var q = require('q');
+global.Promise = function (callback) {
+    var deferred = q.defer();
+    callback(
+        deferred.resolve.bind(deferred),
+        deferred.reject.bind(deferred),
+        eferred.progress.bind(deferred)
+    )
+    return deferred.promise;
+}
+global.Promise.all = q.all;
+```
+
+## Examples:
 
 ```javascript
 
@@ -30,9 +58,8 @@ var chain = new Chain();
 
 chain.next(promiseForStuff());
 
-chain.next(function () {
-    this.stuff = this.values.pop();
-    return promiseSomethingElse(this.stuff);
+chain.next(function (stuff) {
+    return promiseSomethingElse(stuff);
 });
 
 chain.process().then(function () {
@@ -47,13 +74,16 @@ With parallelism and data flow:
 
 var chain = new Chain();
 
-chain.fork([
+chain.next(function () {
+    this.json = {};
+}).fork([
     'file1.json',
     'file2.json',
     'file3.json'
-]).next(function (done) {
-    var file = this.values.pop();
-    return fs.readFile(file, done);
+]).next(function (file, done) {
+    fs.readFile(file, done);
+]).next(function (content) {
+    _.extend(this.json, JSON.pase(content));
 });
 
 chain.process().then(function () {
@@ -61,55 +91,18 @@ chain.process().then(function () {
 });
 ```
 
-```
-var manager = new Manager();
-var installer = new Chain();
-
-installer.fork(function () {
-
-    this.depndencies = this.initial;
-    return this.depndencies;
-})
-.next(function () {
-    this.package = this.values.pop();
-
-    return manager.preinstall(this.package);
-}).next(function () {
-    return manager.install(this.package);
-}).next(function () {
-    return manager.postinstall(this.package);
-});
-
-exports.install = function (packages) {
-
-    installer.process(packages).then(function () {
-        console.log('All installation completed');
-    }, function (err) {
-        console.error('Somethings went wrong...');
-    }, function (dep) {
-        console.log('Install ended for', dep.name);
-    });
-};
-
-
-```
-
-Statefull:
-
 ```javascript
 
-var chain = new Chain(function () {
-
-    this.id = this.values.pop();
+var chain = new Chain(function (id) {
     return db.users.findOne({id: id});
-
-}).next(function () {
-
-    this.user = this.values.pop();
+})
+.next(function (user) {
+    this.user = user;
     return db.roles.find({user: this.user});
 
-}).next(function () {
-    this.roles = this.values.pop();
+})
+.next(function (roles) {
+    this.roles = roles;
 
     if ('admin' in roles) {
         this.user.admin = true;
@@ -117,10 +110,40 @@ var chain = new Chain(function () {
     return this.user.save();
 });
 
-chain.process(1);
-
+chain.process(123);
 ```
 
+```
+var manager = new PackageManager();
+
+var installer = new Chain();
+
+
+installer.fork(function (depndencies) {
+    return this.depndencies;
+})
+.next(function (package) {
+    this.package = package;
+    return manager.preinstall(this.package);
+})
+.next(function () {
+    return manager.install(this.package);
+})
+.next(function () {
+    return manager.postinstall(this.package);
+});
+
+exports.install = function (depndencies) {
+
+    installer.process(depndencies).then(function () {
+        console.log('All installation completed');
+    }, function (err) {
+        console.error('Somethings went wrong...');
+    }, function (dep) {
+        console.log('Install ended for', dep.name);
+    });
+};
+```
 
 ## API
 
@@ -136,14 +159,31 @@ Add a step to the sequence.
 - a function that retrun a promise
 - an async function that take a `done` callback
 - a value
-- a promise
+- a promise (non sens ? promise can be resolve only once...)
 
 
-### .fork(iterator)
+### .fork(iterable)
 
-Fork and continue the sequence in parallel, the number of parallel sequence depend of the number of object contained in iterator.
+Fork and continue the sequence in parallel for each iterable item.
+
+### .join()
+
+Wait for all forks and continue as a sigle sequence.
 
 ### .process(value)
 
-Start the sequence of steps with value as initial value.
-All steps are called in sequence after the previous step succeed and will share the same context (this). The sequence will be suspend when `step` raise an exception or when `step` return an rejected promise.
+Start the sequence of steps with `value` as initial value.
+All steps are called in sequence after the previous step succeed and will share the same context (`this`).
+The sequence will be suspend when `step` raise an exception or when `step` return an rejected promise.
+
+
+TODO
+----
+
+- Run tests different promise implementation
+- Make it works in browser and publish on Bower
+- Limit concurent forks
+- Progress for forks or steps ?
+- Accept a node style callback for process
+- Test fork with generators
+- Error handling

@@ -7,13 +7,19 @@ function Chain() {
 }
 
 Chain.prototype.next = function (step) {
-    this.steps.push(step);
+    if (step instanceof Chain) {
+        this.steps.push(step);
+    } else {
+        this.steps.push(new Step(step));
+    }
+
     return this;
 };
 
 Chain.prototype.fork = function (func) {
     var fork = new Fork(func);
     this.steps.push(fork);
+
     return this;
 };
 
@@ -22,10 +28,10 @@ Chain.prototype.process = Chain.prototype.start = function (initial) {
         this.context.values.push(initial);
     }
 
-    return this.run(0);
+    return this.run(0, initial);
 };
 
-Chain.prototype.run = function (index) {
+Chain.prototype.run = function (index, value) {
     var promise,
         self = this,
         step = this.steps[index];
@@ -33,81 +39,51 @@ Chain.prototype.run = function (index) {
     if (step instanceof Fork) {
         var chain = new Chain();
         chain.steps = this.steps.slice(index + 1);
-        var promises = this.runFork(step, chain);
-        return Promise.all(promises);
-    } else {
-        if (step instanceof Chain) {
-            promise = step.process();
-        } else if (step instanceof Function && step.length) {
-            // step with arguments => giving a done callback
-            promise = this.runWithCallback(step);
-        } else if (step instanceof Function) {
-            // step without arguments
-            // assume it return a promise or a direct vaule
-            promise = this.runWithReturn(step);
-        } else {
-            // step is a promise or a value
-            promise = this.handleValue(step);
-        }
+        var promises = this.runFork(step, chain, value);
+        promise = Promise.all(promises);
 
-        return promise.then(function (result) {
+    } else if (step instanceof Chain) {
+        promise = step.process(value);
+
+    } else if (step) {
+        // step instance
+        promise = step.run(this.context, value).then(function (result) {
             self.context.values.push(result);
             if (index + 1 < self.steps.length) {
-                return self.run(index + 1);
+                return self.run(index + 1, result);
             }
             return result;
         });
-    }
-};
-
-Chain.prototype.runWithCallback = function (step) {
-    var self = this;
-    return new Promise(function (resolve, reject) {
-        step.call(self.context, function (err, value) {
-            if (err instanceof Error) {
-                reject(err);
-            }
-            resolve(err || value);
-        }, reject);
-    });
-};
-
-Chain.prototype.runWithReturn = function (step) {
-    var result = step.call(this.context);
-    return this.handleValue(result);
-};
-
-Chain.prototype.handleValue = function (value) {
-    if (value instanceof Object && 'then' in value) {
-        return value;
     } else {
-        return new Promise(function(resolve) {
-            resolve(value);
+        promise = new Promise(function (resolve) {
+            resolve(null);
         });
     }
+    return promise;
 };
 
-Chain.prototype.runFork = function (fork, chain) {
-    var value, promises = [];
-    fork.initIterator(this.context);
+
+Chain.prototype.runFork = function (fork, chain, value) {
+    var result, promises = [];
+    fork.initIterator(this.context, value);
     do {
-        value = fork.nextValue();
-        if (value) {
-            promises.push(chain.process(value));
+        result = fork.nextValue();
+        if (result) {
+            promises.push(chain.process(result));
         }
-    } while(value);
+    } while(result);
 
     return promises;
 };
 
 
-function Fork (step) {
+function Fork(step) {
     this.step = step;
 }
 
-Fork.prototype.initIterator = function (context) {
+Fork.prototype.initIterator = function (context, value) {
     if (this.step instanceof Function) {
-        this.iterator = this.step.call(context);
+        this.iterator = this.step.call(context, value);
     } else {
         this.iterator = this.step;
     }
@@ -125,6 +101,56 @@ Fork.prototype.nextValue = function () {
     }
     if ('pop' in this.iterator) {
         return this.iterator.pop();
+    }
+};
+
+function Step(step) {
+    this.step = step;
+}
+
+Step.prototype.run = function (context, value) {
+    var promise;
+
+    if (this.step instanceof Function && this.step.length > 1) {
+        // step with arguments => giving a done callback
+        promise = this.runWithCallback(context, value);
+    } else if (this.step instanceof Function) {
+        // step without arguments
+        // assume it return a promise or a direct vaule
+        promise = this.runWithReturn(context, value);
+    } else {
+        // step is a promise or a value
+        promise = this.handleValue(this.step);
+    }
+
+    return promise;
+};
+
+Step.prototype.runWithCallback = function (context, value) {
+    var self = this;
+    return new Promise(function (resolve, reject) {
+        self.step.call(context, value, function (err, result) {
+            if (err instanceof Error) {
+                reject(err);
+            }
+            console.log('resolve', result);
+            resolve(err || result);
+        }, reject);
+    });
+};
+
+Step.prototype.runWithReturn = function (context, value) {
+    var result = this.step.call(context, value);
+    return this.handleValue(result);
+};
+
+Step.prototype.handleValue = function (value) {
+    if (value instanceof Object && 'then' in value) {
+        return value;
+    } else {
+        return new Promise(function(resolve) {
+            resolve(value);
+        });
     }
 };
 

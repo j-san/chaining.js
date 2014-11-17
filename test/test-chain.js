@@ -13,21 +13,21 @@ describe('Chain', function () {
     });
 
     it('should run steps in sequence', function (done) {
-        chain.next(function () {
+        chain.next(function (previous) {
             var value = this.values.pop();
-            expect(value).to.equal(1);
+            expect(value).to.equal(1).to.equal(previous);
             return value + 1;
         });
 
-        chain.next(function () {
+        chain.next(function (previous) {
             var value = this.values.pop();
-            expect(value).to.equal(2);
+            expect(value).to.equal(2).to.equal(previous);
             return value + 1;
         });
 
-        chain.next(function () {
+        chain.next(function (previous) {
             var value = this.values.pop();
-            expect(value).to.equal(3);
+            expect(value).to.equal(3).to.equal(previous);
             return value + 1;
         });
 
@@ -321,7 +321,7 @@ describe('Chain', function () {
         });
 
         it('should handle function with callback', function (done) {
-            chain.next(function (done) {
+            chain.next(function (initial, done) {
                 setTimeout(function () {
                     done(123);
                 }, 100);
@@ -333,7 +333,7 @@ describe('Chain', function () {
         });
 
         it('should store the resolved value', function (done) {
-            chain.next(function (done) {
+            chain.next(function (initial, done) {
                 done('hello');
             });
             chain.next(function () {
@@ -411,18 +411,18 @@ function promiseFail() {
     });
 }
 
-function nodeStyleFunc(callback) {
+function nodeStyleFunc(previous, callback) {
     callback(null, 'success');
 }
 
-function nodeStyleFail(callback) {
+function nodeStyleFail(previous, callback) {
     callback(new Error('Fail'));
 }
 
-function browserStyleFunc(callback) {
+function browserStyleFunc(previous, callback) {
     callback('success');
 }
 
-function browserStyleFail(callback, fallback) {
+function browserStyleFail(previous, callback, fallback) {
     fallback(new Error('Fail'));
 }
