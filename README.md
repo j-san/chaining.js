@@ -31,26 +31,17 @@ You also need a es6 Promise library:
 With `when`
 
 ```
-require('when/es6-shim/Promise');
+require('chaining/src/es6/when');
 ```
 
 With `Q`
 
 ```
-var q = require('q');
-global.Promise = function (callback) {
-    var deferred = q.defer();
-    callback(
-        deferred.resolve.bind(deferred),
-        deferred.reject.bind(deferred),
-        eferred.progress.bind(deferred)
-    )
-    return deferred.promise;
-}
-global.Promise.all = q.all;
+require('chaining/src/es6/q');
 ```
 
-## Examples:
+Examples
+--------
 
 ```javascript
 
@@ -145,7 +136,8 @@ exports.install = function (depndencies) {
 };
 ```
 
-## API
+API
+---
 
 ### Constructor()
 
