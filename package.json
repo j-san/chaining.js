@@ -1,6 +1,6 @@
 {
   "name": "chaining",
-  "version": "0.3.0",
+  "version": "0.3.1",
   "description": "Yet Another Chaining Library",
   "main": "src/chain.js",
   "scripts": {
