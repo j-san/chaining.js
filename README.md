@@ -182,7 +182,8 @@ TODO
 
 - Make it works in browser and publish on Bower
 - Limit concurent forks
-- Progress for forks or steps ?
+- add index for fork
+- Progress notification for forks or steps ?
 - Accept a node style callback for process
 - Test fork with generators
 - Error handling
