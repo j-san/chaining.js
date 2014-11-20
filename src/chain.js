@@ -47,19 +47,19 @@ Chain.prototype.run = function (index, value) {
 
     } else if (step) {
         // step instance
-        promise = step.run(this.context, value).then(function (result) {
-            self.context.values.push(result);
-            if (index + 1 < self.steps.length) {
-                return self.run(index + 1, result);
-            }
-            return result;
-        });
+        promise = step.run(this.context, value);
     } else {
         promise = new Promise(function (resolve) {
             resolve(null);
         });
     }
-    return promise;
+    return promise.then(function (result) {
+        self.context.values.push(result);
+        if (index + 1 < self.steps.length) {
+            return self.run(index + 1, result);
+        }
+        return result;
+    });
 };
 
 
