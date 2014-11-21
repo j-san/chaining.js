@@ -179,3 +179,4 @@ TODO
 - Accept a node style callback for process
 - Test fork with generators
 - Error handling
+- propate the number of arguments given by previous step (currently fixed to one)
