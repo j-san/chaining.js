@@ -13,19 +13,19 @@ describe('Chain', function () {
     it('should run steps in sequence', function (done) {
         chain.next(function (previous) {
             var value = this.values.pop();
-            expect(value).to.equal(1).to.equal(previous);
+            expect(value).to.equal([1]).to.equal(previous);
             return value + 1;
         });
 
         chain.next(function (previous) {
             var value = this.values.pop();
-            expect(value).to.equal(2).to.equal(previous);
+            expect(value).to.equal([2]).to.equal(previous);
             return value + 1;
         });
 
         chain.next(function (previous) {
             var value = this.values.pop();
-            expect(value).to.equal(3).to.equal(previous);
+            expect(value).to.equal([3]).to.equal(previous);
             return value + 1;
         });
 
